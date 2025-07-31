@@ -13,6 +13,34 @@ class MethodChannelZcsPosFlutter extends ZcsPosFlutterPlatform {
   }
 
   @override
+  Future<bool> printReceipt({required String merchantName, required String billerName, required List<Map<String, dynamic>> items, required String netAmount, required String cashPaid}) async{
+    // TODO: implement printReceipt
+    final bool result = await methodChannel.invokeMethod('printReceipt', {
+      'merchantName': merchantName,
+      'billerName': billerName,
+      'items': items,
+      'netAmount': netAmount,
+      'cashPaid': cashPaid,
+    });
+
+    return result;
+  }
+
+  @override
+  Future<bool> printBigText({required String text})async {
+    final bool result  = await methodChannel.invokeMethod('printBigText',{
+      "text":text
+    });
+    return result;
+  }  @override
+  Future<bool> printBarcode({required String text})async {
+    final bool result  = await methodChannel.invokeMethod('printBarcode',{
+      "text":text
+    });
+    return result;
+  }
+/*
+  @override
   Future<bool> printReceipt(
     String merchantName,
     String amount,
@@ -25,6 +53,7 @@ class MethodChannelZcsPosFlutter extends ZcsPosFlutterPlatform {
     });
     return result ?? false;
   }
+*/
 
   @override
   Future<bool> showAmountOnDisplay(String amount) async {
@@ -47,5 +76,27 @@ class MethodChannelZcsPosFlutter extends ZcsPosFlutterPlatform {
   Future<bool> openCashDrawer() async {
     final result = await methodChannel.invokeMethod<bool>('openCashDrawer');
     return result ?? false;
+  }  @override
+  Future<String> printPdfFromUrl(String url) async {
+    final result = await methodChannel.invokeMethod<String>('printPdfFromUrl', {
+      "pdfUrl": "https://www.example.com/invoice.pdf"
+    },);
+    return url ;
+  }
+
+  @override
+  Future<String> printHtmlContent(String htmlContent) async{
+    final result = await methodChannel.invokeMethod<String>('printHtmlContent',{
+      'htmlContent':htmlContent
+    });
+    return result ?? '';
+  } @override
+  Future<String> printPdfFromPathOrAsset(String  path,bool isAsset) async{
+   final result= await MethodChannel('zcs_pos_flutter').invokeMethod("printPdfFromPathOrAsset", {
+      "pdfPath": "path",
+
+      "isAsset": isAsset                   // ✅ Tell native it’s an asset
+    });
+    return result ?? '';
   }
 }

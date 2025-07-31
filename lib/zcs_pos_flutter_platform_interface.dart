@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'zcs_pos_flutter_method_channel.dart';
 
@@ -13,12 +15,18 @@ abstract class ZcsPosFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('initializeSdk() has not been implemented.');
   }
 
-  Future<bool> printReceipt(
-    String merchantName,
-    String amount,
-    List<String> items,
+  Future<bool> printReceipt({ required String merchantName,
+    required String billerName,
+    required List<Map<String,dynamic>> items,
+    required String netAmount,
+    required String cashPaid,}
   ) {
     throw UnimplementedError('printReceipt() has not been implemented.');
+  }  Future<bool> printBigText({ required String text,
+
+  }
+  ) {
+    throw UnimplementedError('printBigText() has not been implemented.');
   }
 
   Future<bool> showAmountOnDisplay(String amount) {
@@ -31,5 +39,17 @@ abstract class ZcsPosFlutterPlatform extends PlatformInterface {
 
   Future<bool> openCashDrawer() {
     throw UnimplementedError('openCashDrawer() has not been implemented.');
+  }
+  Future<bool> printBarcode({required String text}) {
+    throw UnimplementedError('printBarcode() has not been implemented.');
+  }
+
+  Future<String> printHtmlContent(String htmlContent) {
+    throw UnimplementedError('printHtmlContent() has not been implemented.');
+  } Future<String> printPdfFromPathOrAsset(String  path,bool isAsset) {
+    throw UnimplementedError('printHtmlContent() has not been implemented.');
+  }
+  Future<String> printPdfFromUrl(String  pdfUrl,) {
+    throw UnimplementedError('printPdfFromUrl() has not been implemented.');
   }
 }
