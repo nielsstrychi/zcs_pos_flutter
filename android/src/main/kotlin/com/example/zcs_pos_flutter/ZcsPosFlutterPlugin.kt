@@ -119,28 +119,30 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                 // Turn on power and LED for scanner
                 mScanner.QRScanerPowerCtrl(1.toByte())
 
-                // Timeout array (e.g. 15 seconds)
-                val len = IntArray(1)
-                val recvData = ByteArray(1024)
+                try {
+                    // Timeout array (e.g. 15 seconds)
+                    val len = IntArray(1)
+                    val recvData = ByteArray(1024)
 
-                // The timeout sets internal wait but also sets scanning length if QRstartDecdingAndReciveData is called with appropriate timeout param
-                // Based on standard usage, param 1 is timeout in seconds/ms based on SDK spec
-                // Let's assume the method is: QRstartDecdingAndReciveData(timeout_in_sec, recvData, len)
-                val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
+                    // The timeout sets internal wait but also sets scanning length if QRstartDecdingAndReciveData is called with appropriate timeout param
+                    // Based on standard usage, param 1 is timeout in seconds/ms based on SDK spec
+                    // Let's assume the method is: QRstartDecdingAndReciveData(timeout_in_sec, recvData, len)
+                    val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
 
-                // Turn off scanner power
-                mScanner.QRScanerPowerCtrl(0.toByte())
-                mScanner.QRscanDisconect()
-
-                if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
-                    val decodedString = String(recvData, 0, len[0])
-                    mainHandler.post {
-                        result.success(decodedString)
+                    if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
+                        val decodedString = String(recvData, 0, len[0])
+                        mainHandler.post {
+                            result.success(decodedString)
+                        }
+                    } else {
+                        mainHandler.post {
+                            result.success(null)
+                        }
                     }
-                } else {
-                    mainHandler.post {
-                        result.success(null)
-                    }
+                } finally {
+                    // Turn off scanner power and disconnect
+                    mScanner.QRScanerPowerCtrl(0.toByte())
+                    mScanner.QRscanDisconect()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Barcode scan error: ${e.message}")
