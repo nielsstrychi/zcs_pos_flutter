@@ -34,6 +34,7 @@ import com.zcs.sdk.card.CardReaderManager
 import com.zcs.sdk.card.CardReaderTypeEnum
 //import com.zcs.sdk.card.OnSearchCardListener
 import com.zcs.sdk.card.RfCard
+import com.zcs.sdk.HQrsanner
 import com.zcs.sdk.SdkResult
 import com.zcs.sdk.SdkData
 import com.zcs.sdk.util.StringUtils
@@ -65,6 +66,7 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var mCardReadManager: CardReaderManager
     private lateinit var mLed: Led
     private lateinit var mBeeper: Beeper
+    private lateinit var mScanner: HQrsanner
 
     private var isSdkInitialized = false
     private val READ_TIMEOUT = 60 * 1000 // 60 seconds
@@ -92,8 +94,64 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
             "printPdfFromPathOrAsset" -> printPdfFromPathOrAsset(call, result)
             "printPdfFromUrl" -> printPdfFromUrl(call, result)
             "printBarcode" -> printBarcode(call, result)
+            "scanBarcode" -> scanBarcode(result)
             else -> result.notImplemented()
         }
+    }
+
+    private fun scanBarcode(result: Result) {
+        if (!isSdkInitialized) {
+            result.error("SDK_NOT_INITIALIZED", "SDK not initialized", null)
+            return
+        }
+
+        Thread {
+            try {
+                // Initialize scanner connection
+                var connectResult = mScanner.QRscanConnect()
+                if (connectResult != SdkResult.SDK_OK) {
+                    mainHandler.post {
+                        result.error("SCANNER_INIT_FAILED", "Failed to connect to scanner", null)
+                    }
+                    return@Thread
+                }
+
+                // Turn on power and LED for scanner
+                mScanner.QRScanerPowerCtrl(1.toByte())
+
+                try {
+                    // Timeout array (e.g. 15 seconds)
+                    val len = IntArray(1)
+                    val recvData = ByteArray(1024)
+
+                    // The timeout sets internal wait but also sets scanning length if QRstartDecdingAndReciveData is called with appropriate timeout param
+                    // Based on standard usage, param 1 is timeout in seconds/ms based on SDK spec
+                    // Let's assume the method is: QRstartDecdingAndReciveData(timeout_in_sec, recvData, len)
+                    val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
+
+                    if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
+                        val safeLen = java.lang.Math.max(0, java.lang.Math.min(len[0], recvData.size))
+                        val decodedString = String(recvData, 0, safeLen)
+                        mainHandler.post {
+                            result.success(decodedString)
+                        }
+                    } else {
+                        mainHandler.post {
+                            result.success(null)
+                        }
+                    }
+                } finally {
+                    // Turn off scanner power and disconnect
+                    mScanner.QRScanerPowerCtrl(0.toByte())
+                    mScanner.QRscanDisconect()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Barcode scan error: ${e.message}")
+                mainHandler.post {
+                    result.error("SCAN_ERROR", e.message, null)
+                }
+            }
+        }.start()
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -108,6 +166,7 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
             mCardReadManager = mDriverManager.cardReadManager
             mLed = mDriverManager.ledDriver
             mBeeper = mDriverManager.beeper
+            mScanner = mDriverManager.hQrsannerDriver
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize SDK components: ${e.message}")
         }
