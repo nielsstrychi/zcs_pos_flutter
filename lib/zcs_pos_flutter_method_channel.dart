@@ -39,6 +39,12 @@ class MethodChannelZcsPosFlutter extends ZcsPosFlutterPlatform {
     });
     return result;
   }
+
+  @override
+  Future<String?> scanBarcode() async {
+    final result = await methodChannel.invokeMethod<String>('scanBarcode');
+    return result;
+  }
 /*
   @override
   Future<bool> printReceipt(

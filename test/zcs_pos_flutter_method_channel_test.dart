@@ -19,4 +19,8 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, null);
   });
+
+  test('scanBarcode', () async {
+    expect(await platform.scanBarcode(), '42');
+  });
 }

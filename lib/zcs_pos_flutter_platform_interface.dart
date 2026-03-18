@@ -44,6 +44,10 @@ abstract class ZcsPosFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('printBarcode() has not been implemented.');
   }
 
+  Future<String?> scanBarcode() {
+    throw UnimplementedError('scanBarcode() has not been implemented.');
+  }
+
   Future<String> printHtmlContent(String htmlContent) {
     throw UnimplementedError('printHtmlContent() has not been implemented.');
   } Future<String> printPdfFromPathOrAsset(String  path,bool isAsset) {
