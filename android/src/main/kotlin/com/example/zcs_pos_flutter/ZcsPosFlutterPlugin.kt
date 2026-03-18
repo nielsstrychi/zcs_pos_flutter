@@ -143,7 +143,7 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Barcode scan error: \${e.message}")
+                Log.e(TAG, "Barcode scan error: ${e.message}")
                 mainHandler.post {
                     result.error("SCAN_ERROR", e.message, null)
                 }
