@@ -130,7 +130,8 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                     val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
 
                     if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
-                        val decodedString = String(recvData, 0, len[0])
+                        val safeLen = java.lang.Math.max(0, java.lang.Math.min(len[0], recvData.size))
+                        val decodedString = String(recvData, 0, safeLen)
                         mainHandler.post {
                             result.success(decodedString)
                         }
