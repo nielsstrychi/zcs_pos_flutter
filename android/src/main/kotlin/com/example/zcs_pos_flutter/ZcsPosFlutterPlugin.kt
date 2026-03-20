@@ -118,7 +118,6 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                     if (connectResult == SdkResult.SDK_OK) {
                         break
                     }
-                    Log.d(TAG, "Scanner connect retry $i failed, retrying...")
                 }
 
                 if (connectResult != SdkResult.SDK_OK) {
