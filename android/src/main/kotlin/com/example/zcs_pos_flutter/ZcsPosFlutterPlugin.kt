@@ -107,17 +107,18 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
 
         Thread {
             try {
+                // Turn on power and LED for scanner first
+                mScanner.QRScanerPowerCtrl(1.toByte())
+
                 // Initialize scanner connection
                 var connectResult = mScanner.QRscanConnect()
                 if (connectResult != SdkResult.SDK_OK) {
+                    mScanner.QRScanerPowerCtrl(0.toByte()) // Turn off if connection fails
                     mainHandler.post {
                         result.error("SCANNER_INIT_FAILED", "Failed to connect to scanner", null)
                     }
                     return@Thread
                 }
-
-                // Turn on power and LED for scanner
-                mScanner.QRScanerPowerCtrl(1.toByte())
 
                 try {
                     // Timeout array (e.g. 15 seconds)
