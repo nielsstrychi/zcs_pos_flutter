@@ -110,6 +110,9 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                 // Turn on power and LED for scanner first
                 mScanner.QRScanerPowerCtrl(1.toByte())
 
+                // Wait for the device to become available
+                Thread.sleep(1000)
+
                 // Initialize scanner connection
                 var connectResult = mScanner.QRscanConnect()
                 if (connectResult != SdkResult.SDK_OK) {
