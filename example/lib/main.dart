@@ -155,6 +155,20 @@ class _ZcsHomePageState extends State<ZcsHomePage> {
     }
   }
 
+  Future<void> _scanBarcode() async {
+    try {
+      _showSnack("Scanning... please wait up to 15s");
+      String? result = await _zcsPosFlutter.scanBarcode();
+      if (result != null) {
+        _showSnack("✅ Scanned: $result");
+      } else {
+        _showSnack("❌ Scan timeout or failed");
+      }
+    } catch (e) {
+      _showSnack("Scan failed: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,6 +208,10 @@ class _ZcsHomePageState extends State<ZcsHomePage> {
             ElevatedButton(
               onPressed: _openCashDrawer,
               child: const Text('Open Cash Drawer'),
+            ),
+            ElevatedButton(
+              onPressed: _scanBarcode,
+              child: const Text('Scan Barcode'),
             ),
           ],
         ),
