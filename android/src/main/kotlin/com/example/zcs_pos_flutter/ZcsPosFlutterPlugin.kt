@@ -110,44 +110,52 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                 // Turn on power and LED for scanner first
                 mScanner.QRScanerPowerCtrl(1.toByte())
 
-                // Wait for the device to become available
-                Thread.sleep(1000)
-
-                // Initialize scanner connection
-                var connectResult = mScanner.QRscanConnect()
-                if (connectResult != SdkResult.SDK_OK) {
-                    mScanner.QRScanerPowerCtrl(0.toByte()) // Turn off if connection fails
-                    mainHandler.post {
-                        result.error("SCANNER_INIT_FAILED", "Failed to connect to scanner", null)
-                    }
-                    return@Thread
-                }
-
                 try {
-                    // Timeout array (e.g. 15 seconds)
-                    val len = IntArray(1)
-                    val recvData = ByteArray(1024)
-
-                    // The timeout sets internal wait but also sets scanning length if QRstartDecdingAndReciveData is called with appropriate timeout param
-                    // Based on standard usage, param 1 is timeout in seconds/ms based on SDK spec
-                    // Let's assume the method is: QRstartDecdingAndReciveData(timeout_in_sec, recvData, len)
-                    val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
-
-                    if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
-                        val safeLen = java.lang.Math.max(0, java.lang.Math.min(len[0], recvData.size))
-                        val decodedString = String(recvData, 0, safeLen)
-                        mainHandler.post {
-                            result.success(decodedString)
+                    // Wait for the device to become available and retry connection
+                    var connectResult = -1
+                    for (i in 0 until 5) {
+                        Thread.sleep(1000)
+                        connectResult = mScanner.QRscanConnect()
+                        if (connectResult == SdkResult.SDK_OK) {
+                            break
                         }
-                    } else {
+                    }
+
+                    if (connectResult != SdkResult.SDK_OK) {
                         mainHandler.post {
-                            result.success(null)
+                            result.error("SCANNER_INIT_FAILED", "Failed to connect to scanner", null)
                         }
+                        return@Thread
+                    }
+
+                    try {
+                        // Timeout array (e.g. 15 seconds)
+                        val len = IntArray(1)
+                        val recvData = ByteArray(1024)
+
+                        // The timeout sets internal wait but also sets scanning length if QRstartDecdingAndReciveData is called with appropriate timeout param
+                        // Based on standard usage, param 1 is timeout in seconds/ms based on SDK spec
+                        // Let's assume the method is: QRstartDecdingAndReciveData(timeout_in_sec, recvData, len)
+                        val decodeResult = mScanner.QRstartDecdingAndReciveData(15, recvData, len)
+
+                        if (decodeResult == SdkResult.SDK_OK && len[0] > 0) {
+                            val safeLen = java.lang.Math.max(0, java.lang.Math.min(len[0], recvData.size))
+                            val decodedString = String(recvData, 0, safeLen)
+                            mainHandler.post {
+                                result.success(decodedString)
+                            }
+                        } else {
+                            mainHandler.post {
+                                result.success(null)
+                            }
+                        }
+                    } finally {
+                        // Disconnect scanner (only reached when connection succeeded)
+                        mScanner.QRscanDisconect()
                     }
                 } finally {
-                    // Turn off scanner power and disconnect
+                    // Always turn off scanner power regardless of connection or scan outcome
                     mScanner.QRScanerPowerCtrl(0.toByte())
-                    mScanner.QRscanDisconect()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Barcode scan error: ${e.message}")
