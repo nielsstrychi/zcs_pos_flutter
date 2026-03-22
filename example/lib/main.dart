@@ -155,17 +155,21 @@ class _ZcsHomePageState extends State<ZcsHomePage> {
     }
   }
 
-  Future<void> _scanBarcode() async {
+  Future<void> _startScanner() async {
     try {
-      _showSnack("Scanning... please wait up to 15s");
-      String? result = await _zcsPosFlutter.scanBarcode();
-      if (result != null) {
-        _showSnack("✅ Scanned: $result");
-      } else {
-        _showSnack("❌ Scan timeout or failed");
-      }
+      await _zcsPosFlutter.startScanner();
+      _showSnack("✅ Scanner started");
     } catch (e) {
-      _showSnack("Scan failed: $e");
+      _showSnack("Scanner start failed: $e");
+    }
+  }
+
+  Future<void> _stopScanner() async {
+    try {
+      await _zcsPosFlutter.stopScanner();
+      _showSnack("✅ Scanner stopped");
+    } catch (e) {
+      _showSnack("Scanner stop failed: $e");
     }
   }
 
@@ -210,8 +214,12 @@ class _ZcsHomePageState extends State<ZcsHomePage> {
               child: const Text('Open Cash Drawer'),
             ),
             ElevatedButton(
-              onPressed: _scanBarcode,
-              child: const Text('Scan Barcode'),
+              onPressed: _startScanner,
+              child: const Text('Start Scanner'),
+            ),
+            ElevatedButton(
+              onPressed: _stopScanner,
+              child: const Text('Stop Scanner'),
             ),
           ],
         ),

@@ -47,7 +47,11 @@ class ZcsPosFlutter {
     return result;
   }
 
-  Future<String?> scanBarcode() {
-    return ZcsPosFlutterPlatform.instance.scanBarcode();
+  Future<bool> startScanner() {
+    return ZcsPosFlutterPlatform.instance.startScanner();
+  }
+
+  Future<bool> stopScanner() {
+    return ZcsPosFlutterPlatform.instance.stopScanner();
   }
 }
