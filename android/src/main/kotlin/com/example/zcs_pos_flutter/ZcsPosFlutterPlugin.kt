@@ -110,6 +110,13 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
             try {
                 // Turn on power for scanner (acts as HID keyboard wedge)
                 mScanner.QRScanerPowerCtrl(1.toByte())
+                mScanner.QRScanerCtrl(1.toByte())
+                try {
+                    Thread.sleep(10)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+                mScanner.QRScanerCtrl(0.toByte())
                 mainHandler.post {
                     result.success(true)
                 }
