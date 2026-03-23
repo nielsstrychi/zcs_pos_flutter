@@ -114,7 +114,12 @@ class ZcsPosFlutterPlugin : FlutterPlugin, MethodCallHandler {
                 try {
                     Thread.sleep(10)
                 } catch (e: InterruptedException) {
-                    e.printStackTrace()
+                        Thread.currentThread().interrupt()
++                    Log.w(TAG, "Scanner trigger wait interrupted", e)
++                    mainHandler.post {
++                        result.error("SCANNER_START_INTERRUPTED", "Scanner start interrupted", null)
++                    }
++                    return@Thread
                 }
                 mScanner.QRScanerCtrl(0.toByte())
                 mainHandler.post {
